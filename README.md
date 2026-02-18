@@ -371,12 +371,6 @@ This is a university project, but contributions are welcome:
 
 This project is created for educational purposes as part of LPU coursework.
 
-## 👨‍💻 Author
-
-**[Your Name]**
-- Registration Number: [Your Reg No]
-- Course: Python and Full Stack
-- University: Lovely Professional University
 
 ## 🙏 Acknowledgments
 
@@ -390,8 +384,7 @@ This project is created for educational purposes as part of LPU coursework.
 
 For questions or issues:
 - Create an issue in the repository
-- Contact: [Your Email]
-- LPU Project Portal: [Link]
+- Contact: sharmaabhijeet317@gmail.com
 
 ---
 
