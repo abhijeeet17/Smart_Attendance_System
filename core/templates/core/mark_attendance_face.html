@@ -1,0 +1,350 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Mark Attendance - Face Recognition{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 900px; margin: 0 auto;">
+    <div class="card-header">
+        <h1 class="card-title">
+            <i class="fas fa-camera"></i>
+            Mark Attendance - Face Recognition
+        </h1>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(79, 70, 229, 0.1)); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+        <h3 style="font-weight: 600; margin-bottom: 0.5rem;">
+            <i class="fas fa-info-circle" style="color: #6366f1;"></i> Session Details
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+            <div>
+                <strong>Course:</strong> {{ session.course.course_name }}
+            </div>
+            <div>
+                <strong>Date:</strong> {{ session.session_date|date:"d M, Y" }}
+            </div>
+            <div>
+                <strong>Time:</strong> {{ session.session_time|time:"g:i A" }}
+            </div>
+            <div>
+                <strong>Type:</strong> {{ session.get_session_type_display }}
+            </div>
+        </div>
+    </div>
+    
+    <form method="post" enctype="multipart/form-data" id="faceRecognitionForm">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label class="form-label">
+                <i class="fas fa-video"></i> Capture Student Face
+            </label>
+            
+            <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(79, 70, 229, 0.1)); border: 3px solid #6366f1; border-radius: 20px; padding: 2rem; text-align: center;">
+                
+                <!-- Camera Section -->
+                <div id="cameraSection">
+                    <div id="initialState">
+                        <i class="fas fa-video" style="font-size: 4rem; color: #6366f1; margin-bottom: 1rem; display: block;"></i>
+                        <h3 style="font-weight: 700; color: #0f172a; margin-bottom: 0.5rem;">Capture Face for Attendance</h3>
+                        <p style="color: #64748b; margin-bottom: 1.5rem;">Click below to start your camera and capture your face</p>
+                        
+                        <button type="button" id="startCameraBtn" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                            <i class="fas fa-camera"></i> Start Camera
+                        </button>
+                    </div>
+                    
+                    <!-- Video Preview Container -->
+                    <div id="videoContainer" style="display: none; margin: 1rem auto; max-width: 640px;">
+                        <video id="video" autoplay playsinline style="width: 100%; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);"></video>
+                        <canvas id="canvas" style="display: none;"></canvas>
+                        
+                        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                            <button type="button" id="captureBtn" class="btn btn-success" style="font-size: 1.1rem; padding: 0.875rem 2rem;">
+                                <i class="fas fa-camera-retro"></i> Capture Photo
+                            </button>
+                            <button type="button" id="cancelCameraBtn" class="btn btn-outline" style="font-size: 1rem; padding: 0.875rem 1.5rem;">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Captured Image Preview -->
+                    <div id="capturedImageContainer" style="display: none; margin: 1rem auto; max-width: 640px;">
+                        <img id="capturedImage" style="width: 100%; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                        
+                        <!-- Processing Status -->
+                        <div id="processingStatus" style="display: none; margin-top: 1.5rem; padding: 1rem; background: rgba(99, 102, 241, 0.1); border-radius: 8px;">
+                            <i class="fas fa-spinner fa-spin" style="color: #6366f1; margin-right: 0.5rem;"></i>
+                            <span style="color: #6366f1; font-weight: 600;">Processing face recognition...</span>
+                        </div>
+                        
+                        <!-- Recognition Result -->
+                        <div id="recognitionResult" style="display: none; margin-top: 1.5rem;"></div>
+                        
+                        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                            <button type="button" id="processBtn" class="btn btn-primary" style="font-size: 1.1rem; padding: 0.875rem 2rem;">
+                                <i class="fas fa-brain"></i> Recognize & Mark Attendance
+                            </button>
+                            <button type="button" id="retakeBtn" class="btn btn-outline" style="font-size: 1rem; padding: 0.875rem 1.5rem;">
+                                <i class="fas fa-redo"></i> Retake
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden input to store captured image -->
+                    <input type="hidden" id="capturedImageData" name="captured_image_data">
+                </div>
+            </div>
+        </div>
+        
+        <div style="background: rgba(99, 102, 241, 0.05); border-left: 4px solid #6366f1; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;">
+            <h4 style="font-weight: 600; color: #6366f1; margin-bottom: 1rem;">
+                <i class="fas fa-lightbulb"></i> How It Works
+            </h4>
+            <ol style="color: #64748b; margin-left: 1.5rem; line-height: 1.8;">
+                <li>Click "Start Camera" to activate your webcam</li>
+                <li>Position your face in the camera frame</li>
+                <li>Click "Capture Photo" to take your picture</li>
+                <li>AI will automatically recognize and mark your attendance</li>
+            </ol>
+        </div>
+        
+        <div style="background: rgba(16, 185, 129, 0.05); border-left: 4px solid #10b981; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+            <h4 style="font-weight: 600; color: #10b981; margin-bottom: 1rem;">
+                <i class="fas fa-check-circle"></i> Tips for Best Results
+            </h4>
+            <ul style="color: #64748b; margin-left: 1.5rem; line-height: 1.8;">
+                <li><strong>Good lighting:</strong> Make sure your face is well-lit</li>
+                <li><strong>Face the camera:</strong> Look directly at the camera</li>
+                <li><strong>Center yourself:</strong> Keep your face in the center of the frame</li>
+                <li><strong>Remove obstructions:</strong> Take off hats, masks, or sunglasses</li>
+                <li><strong>Stay still:</strong> Keep steady when capturing</li>
+            </ul>
+        </div>
+    </form>
+    
+    <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
+        <p style="color: #64748b; margin-bottom: 1rem;">Having trouble with camera? Use manual marking instead</p>
+        <a href="{% url 'mark_attendance_manual' session.id %}" class="btn btn-secondary">
+            <i class="fas fa-hand-pointer"></i> Mark Manually
+        </a>
+    </div>
+</div>
+
+<script>
+    let video = document.getElementById('video');
+    let canvas = document.getElementById('canvas');
+    let capturedImage = document.getElementById('capturedImage');
+    let startCameraBtn = document.getElementById('startCameraBtn');
+    let captureBtn = document.getElementById('captureBtn');
+    let cancelCameraBtn = document.getElementById('cancelCameraBtn');
+    let retakeBtn = document.getElementById('retakeBtn');
+    let processBtn = document.getElementById('processBtn');
+    let initialState = document.getElementById('initialState');
+    let videoContainer = document.getElementById('videoContainer');
+    let capturedImageContainer = document.getElementById('capturedImageContainer');
+    let capturedImageData = document.getElementById('capturedImageData');
+    let processingStatus = document.getElementById('processingStatus');
+    let recognitionResult = document.getElementById('recognitionResult');
+    let stream = null;
+
+    // Start Camera
+    startCameraBtn.addEventListener('click', async function() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user'
+                } 
+            });
+            video.srcObject = stream;
+            
+            initialState.style.display = 'none';
+            videoContainer.style.display = 'block';
+            capturedImageContainer.style.display = 'none';
+        } catch (err) {
+            alert('Error accessing camera: ' + err.message + '\n\nPlease make sure:\n1. Camera permissions are granted\n2. Camera is not being used by another application');
+            console.error('Camera error:', err);
+        }
+    });
+
+    // Capture Photo
+    captureBtn.addEventListener('click', function() {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        let context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convert canvas to blob and then to base64
+        canvas.toBlob(function(blob) {
+            let reader = new FileReader();
+            reader.onloadend = function() {
+                let base64data = reader.result;
+                capturedImageData.value = base64data;
+                capturedImage.src = base64data;
+                
+                // Show captured image and hide video
+                videoContainer.style.display = 'none';
+                capturedImageContainer.style.display = 'block';
+                
+                // Stop camera stream
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+            };
+            reader.readAsDataURL(blob);
+        }, 'image/jpeg', 0.95);
+    });
+
+    // Cancel Camera
+    cancelCameraBtn.addEventListener('click', function() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+        videoContainer.style.display = 'none';
+        initialState.style.display = 'block';
+    });
+
+    // Retake Photo
+    retakeBtn.addEventListener('click', function() {
+        capturedImageData.value = '';
+        capturedImageContainer.style.display = 'none';
+        recognitionResult.style.display = 'none';
+        initialState.style.display = 'block';
+    });
+
+    // Process Face Recognition
+    processBtn.addEventListener('click', async function() {
+        if (!capturedImageData.value) {
+            alert('Please capture a photo first.');
+            return;
+        }
+        
+        // Show processing status
+        processingStatus.style.display = 'block';
+        recognitionResult.style.display = 'none';
+        processBtn.disabled = true;
+        processBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        
+        // Create form data
+        let formData = new FormData();
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        formData.append('captured_image_data', capturedImageData.value);
+        
+        try {
+            // Submit to server
+            let response = await fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                let result = await response.text();
+                
+                // Check if it's a redirect (successful recognition)
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else {
+                    // Parse the response to check for success/error messages
+                    processingStatus.style.display = 'none';
+                    
+                    // Extract messages from Django response
+                    let tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = result;
+                    let messages = tempDiv.querySelectorAll('.alert, .message');
+                    
+                    if (messages.length > 0) {
+                        recognitionResult.innerHTML = messages[0].outerHTML;
+                        recognitionResult.style.display = 'block';
+                    } else {
+                        // Default success - reload page to see updates
+                        window.location.reload();
+                    }
+                }
+            } else {
+                processingStatus.style.display = 'none';
+                recognitionResult.innerHTML = '<div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 1rem; border-radius: 8px;"><strong style="color: #ef4444;"><i class="fas fa-exclamation-circle"></i> Error:</strong> Failed to process face recognition. Please try again.</div>';
+                recognitionResult.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            processingStatus.style.display = 'none';
+            recognitionResult.innerHTML = '<div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 1rem; border-radius: 8px;"><strong style="color: #ef4444;"><i class="fas fa-exclamation-circle"></i> Error:</strong> Network error. Please check your connection and try again.</div>';
+            recognitionResult.style.display = 'block';
+        } finally {
+            processBtn.disabled = false;
+            processBtn.innerHTML = '<i class="fas fa-brain"></i> Recognize & Mark Attendance';
+        }
+    });
+
+    // Cleanup camera on page unload
+    window.addEventListener('beforeunload', function() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+    });
+</script>
+
+<style>
+    .btn {
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: white;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+    
+    .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+    
+    .btn-success:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #64748b, #475569);
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.4);
+    }
+    
+    .btn-outline {
+        background: white;
+        color: #64748b;
+        border: 2px solid #e2e8f0;
+    }
+    
+    .btn-outline:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+    }
+</style>
+{% endblock %}

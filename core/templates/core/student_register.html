@@ -1,0 +1,284 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Register Student - Smart Attendance System{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <div class="card-header">
+        <h1 class="card-title">
+            <i class="fas fa-user-plus"></i>
+            Register New Student
+        </h1>
+    </div>
+    
+    <form method="post" enctype="multipart/form-data" id="registrationForm">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label class="form-label" for="id_registration_number">
+                <i class="fas fa-id-card"></i> Registration Number *
+            </label>
+            {{ form.registration_number }}
+            {% if form.registration_number.errors %}
+                <div style="color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem;">
+                    {{ form.registration_number.errors }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="id_name">
+                <i class="fas fa-user"></i> Full Name *
+            </label>
+            {{ form.name }}
+            {% if form.name.errors %}
+                <div style="color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem;">
+                    {{ form.name.errors }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="id_email">
+                <i class="fas fa-envelope"></i> Email Address *
+            </label>
+            {{ form.email }}
+            {% if form.email.errors %}
+                <div style="color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem;">
+                    {{ form.email.errors }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="id_phone">
+                <i class="fas fa-phone"></i> Phone Number
+            </label>
+            {{ form.phone }}
+            {% if form.phone.errors %}
+                <div style="color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem;">
+                    {{ form.phone.errors }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="id_course">
+                <i class="fas fa-book"></i> Course *
+            </label>
+            {{ form.course }}
+            {% if form.course.errors %}
+                <div style="color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem;">
+                    {{ form.course.errors }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">
+                <i class="fas fa-camera"></i> Face Photo for Recognition *
+            </label>
+            
+            <!-- Camera Section -->
+            <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(79, 70, 229, 0.1)); border: 2px solid #6366f1; border-radius: 12px; padding: 2rem; text-align: center; margin-bottom: 1rem;">
+                <div id="cameraSection">
+                    <i class="fas fa-video" style="font-size: 3rem; color: #6366f1; margin-bottom: 1rem;"></i>
+                    <p style="color: #6366f1; font-weight: 600; margin-bottom: 0.5rem;">Capture your face photo</p>
+                    <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 1rem;">
+                        Make sure your face is clearly visible and well-lit
+                    </p>
+                    
+                    <!-- Video Preview -->
+                    <div id="videoContainer" style="display: none; margin: 1rem auto; max-width: 400px;">
+                        <video id="video" autoplay playsinline style="width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></video>
+                        <canvas id="canvas" style="display: none;"></canvas>
+                    </div>
+                    
+                    <!-- Captured Image Preview -->
+                    <div id="capturedImageContainer" style="display: none; margin: 1rem auto; max-width: 400px;">
+                        <img id="capturedImage" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    </div>
+                    
+                    <!-- Camera Controls -->
+                    <div style="margin-top: 1rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                        <button type="button" id="startCameraBtn" class="btn btn-primary">
+                            <i class="fas fa-camera"></i> Start Camera
+                        </button>
+                        <button type="button" id="captureBtn" class="btn btn-success" style="display: none;">
+                            <i class="fas fa-camera-retro"></i> Capture Photo
+                        </button>
+                        <button type="button" id="retakeBtn" class="btn btn-outline" style="display: none;">
+                            <i class="fas fa-redo"></i> Retake
+                        </button>
+                    </div>
+                    
+                    <!-- Hidden file input to store captured image -->
+                    <input type="hidden" id="capturedImageData" name="captured_image_data">
+                </div>
+            </div>
+            
+            {% if form.photo.errors %}
+                <div style="color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem;">
+                    {{ form.photo.errors }}
+                </div>
+            {% endif %}
+            
+            <div style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                <strong style="color: #10b981;"><i class="fas fa-info-circle"></i> Face Recognition Tips:</strong>
+                <ul style="margin: 0.5rem 0 0 1.5rem; color: #64748b; font-size: 0.875rem;">
+                    <li>Ensure good lighting</li>
+                    <li>Face should be clearly visible</li>
+                    <li>Look directly at the camera</li>
+                    <li>Remove glasses if possible</li>
+                    <li>Neutral expression works best</li>
+                    <li>Keep your face centered in the frame</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;" id="submitBtn">
+                <i class="fas fa-save"></i> Register Student
+            </button>
+            <a href="{% url 'student_list' %}" class="btn btn-outline" style="flex: 0;">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+    let video = document.getElementById('video');
+    let canvas = document.getElementById('canvas');
+    let capturedImage = document.getElementById('capturedImage');
+    let startCameraBtn = document.getElementById('startCameraBtn');
+    let captureBtn = document.getElementById('captureBtn');
+    let retakeBtn = document.getElementById('retakeBtn');
+    let videoContainer = document.getElementById('videoContainer');
+    let capturedImageContainer = document.getElementById('capturedImageContainer');
+    let capturedImageData = document.getElementById('capturedImageData');
+    let stream = null;
+
+    // Start Camera
+    startCameraBtn.addEventListener('click', async function() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                    facingMode: 'user'
+                } 
+            });
+            video.srcObject = stream;
+            
+            videoContainer.style.display = 'block';
+            startCameraBtn.style.display = 'none';
+            captureBtn.style.display = 'inline-block';
+            capturedImageContainer.style.display = 'none';
+        } catch (err) {
+            alert('Error accessing camera: ' + err.message);
+            console.error('Camera error:', err);
+        }
+    });
+
+    // Capture Photo
+    captureBtn.addEventListener('click', function() {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        let context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convert canvas to blob and then to base64
+        canvas.toBlob(function(blob) {
+            let reader = new FileReader();
+            reader.onloadend = function() {
+                let base64data = reader.result;
+                capturedImageData.value = base64data;
+                capturedImage.src = base64data;
+                
+                // Show captured image and hide video
+                videoContainer.style.display = 'none';
+                capturedImageContainer.style.display = 'block';
+                captureBtn.style.display = 'none';
+                retakeBtn.style.display = 'inline-block';
+                
+                // Stop camera stream
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+            };
+            reader.readAsDataURL(blob);
+        }, 'image/jpeg', 0.9);
+    });
+
+    // Retake Photo
+    retakeBtn.addEventListener('click', function() {
+        capturedImageData.value = '';
+        capturedImageContainer.style.display = 'none';
+        retakeBtn.style.display = 'none';
+        startCameraBtn.style.display = 'inline-block';
+    });
+
+    // Form submission validation
+    document.getElementById('registrationForm').addEventListener('submit', function(e) {
+        if (!capturedImageData.value) {
+            e.preventDefault();
+            alert('Please capture your face photo before submitting.');
+            return false;
+        }
+    });
+
+    // Cleanup camera on page unload
+    window.addEventListener('beforeunload', function() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+    });
+</script>
+
+<style>
+    .btn {
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+    
+    .btn-success:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+    
+    .btn-outline {
+        background: white;
+        color: #64748b;
+        border: 2px solid #e2e8f0;
+    }
+    
+    .btn-outline:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Students - Smart Attendance System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 class="card-title">
+            <i class="fas fa-users"></i>
+            Registered Students
+        </h1>
+        <a href="{% url 'student_register' %}" class="btn btn-primary">
+            <i class="fas fa-user-plus"></i> Add Student
+        </a>
+    </div>
+    
+    <!-- Search and Filter -->
+    <form method="get" style="margin-bottom: 2rem;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 1rem; align-items: end;">
+            <div class="form-group" style="margin: 0;">
+                <label class="form-label"><i class="fas fa-search"></i> Search</label>
+                <input type="text" name="search" class="form-control" placeholder="Search by name, registration number, or email..." value="{{ search_query }}">
+            </div>
+            
+            <div class="form-group" style="margin: 0;">
+                <label class="form-label"><i class="fas fa-filter"></i> Filter by Course</label>
+                <select name="course" class="form-control">
+                    <option value="">All Courses</option>
+                    {% for course in courses %}
+                    <option value="{{ course.id }}" {% if selected_course == course.id|stringformat:"s" %}selected{% endif %}>
+                        {{ course.course_code }} - {{ course.course_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
+    </form>
+    
+    {% if students %}
+    <div style="overflow-x: auto;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Photo</th>
+                    <th>Reg. Number</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Course</th>
+                    <th>Attendance</th>
+                    <th>Face Recognition</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>
+                        {% if student.photo %}
+                        <img src="{{ student.photo.url }}" alt="{{ student.name }}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #6366f1;">
+                        {% else %}
+                        <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                            {{ student.name.0 }}
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ student.registration_number }}</strong></td>
+                    <td>{{ student.name }}</td>
+                    <td>{{ student.email }}</td>
+                    <td>
+                        {% if student.course %}
+                        <span class="badge badge-success">{{ student.course.course_code }}</span>
+                        {% else %}
+                        <span class="badge badge-warning">No Course</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% with percentage=student.get_attendance_percentage %}
+                        <span class="badge {% if percentage >= 75 %}badge-success{% elif percentage >= 50 %}badge-warning{% else %}badge-danger{% endif %}">
+                            {{ percentage }}%
+                        </span>
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% if student.face_encoding %}
+                        <i class="fas fa-check-circle" style="color: #10b981; font-size: 1.25rem;" title="Face encoding available"></i>
+                        {% else %}
+                        <i class="fas fa-times-circle" style="color: #ef4444; font-size: 1.25rem;" title="No face encoding"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'student_detail' student.id %}" class="btn btn-primary" style="padding: 0.5rem 1rem;">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div style="margin-top: 1rem; padding: 1rem; background: rgba(99, 102, 241, 0.05); border-radius: 12px; text-align: center; color: #64748b;">
+        <strong>Total Students:</strong> {{ students.count }}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 4rem; color: #64748b;">
+        <i class="fas fa-users" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+        <h3 style="font-weight: 600; margin-bottom: 0.5rem;">No Students Found</h3>
+        <p>{% if search_query or selected_course %}Try adjusting your search filters{% else %}Start by adding your first student{% endif %}</p>
+        {% if not search_query and not selected_course %}
+        <a href="{% url 'student_register' %}" class="btn btn-primary" style="margin-top: 1.5rem;">
+            <i class="fas fa-user-plus"></i> Add First Student
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

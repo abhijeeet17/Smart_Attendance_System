@@ -1,0 +1,47 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Create Session{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 700px; margin: 0 auto;">
+    <div class="card-header">
+        <h1 class="card-title">
+            <i class="fas fa-plus-circle"></i>
+            Create Attendance Session
+        </h1>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label class="form-label"><i class="fas fa-book"></i> Select Course *</label>
+            {{ form.course }}
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label"><i class="fas fa-calendar"></i> Session Date *</label>
+            {{ form.session_date }}
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label"><i class="fas fa-clock"></i> Session Time *</label>
+            {{ form.session_time }}
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label"><i class="fas fa-tags"></i> Session Type *</label>
+            {{ form.session_type }}
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">
+                <i class="fas fa-save"></i> Create Session
+            </button>
+            <a href="{% url 'session_list' %}" class="btn btn-outline">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

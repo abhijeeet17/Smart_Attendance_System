@@ -1,0 +1,65 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Sessions{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 class="card-title">
+            <i class="fas fa-calendar-check"></i>
+            Attendance Sessions
+        </h1>
+        <a href="{% url 'session_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Session
+        </a>
+    </div>
+    
+    {% if sessions %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Course</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Type</th>
+                <th>Faculty</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session in sessions %}
+            <tr>
+                <td><strong>{{ session.course.course_code }}</strong> - {{ session.course.course_name }}</td>
+                <td>{{ session.session_date|date:"d M, Y" }}</td>
+                <td>{{ session.session_time|time:"g:i A" }}</td>
+                <td><span class="badge badge-success">{{ session.get_session_type_display }}</span></td>
+                <td>{{ session.faculty.get_full_name|default:"Admin" }}</td>
+                <td>
+                    {% if session.is_active %}
+                    <span class="badge badge-success"><i class="fas fa-check"></i> Active</span>
+                    {% else %}
+                    <span class="badge badge-danger"><i class="fas fa-lock"></i> Closed</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'mark_attendance' session.id %}" class="btn btn-primary" style="padding: 0.5rem 1rem;">
+                        <i class="fas fa-check-square"></i> Mark
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="text-align: center; padding: 4rem;">
+        <i class="fas fa-calendar-times" style="font-size: 4rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+        <h3>No sessions found</h3>
+        <p style="color: #64748b;">Create your first attendance session</p>
+        <a href="{% url 'session_create' %}" class="btn btn-primary" style="margin-top: 1rem;">
+            <i class="fas fa-plus"></i> Create Session
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

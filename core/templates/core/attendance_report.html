@@ -1,0 +1,119 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Attendance Reports{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1 class="card-title">
+            <i class="fas fa-file-alt"></i>
+            Attendance Reports
+        </h1>
+    </div>
+    
+    <form method="get" style="background: rgba(99, 102, 241, 0.05); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+        <h3 style="font-weight: 600; margin-bottom: 1rem; color: #0f172a;">
+            <i class="fas fa-filter"></i> Filter Reports
+        </h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-group" style="margin: 0;">
+                <label class="form-label">Course</label>
+                <select name="course" class="form-control">
+                    <option value="">All Courses</option>
+                    {% for course in courses %}
+                    <option value="{{ course.id }}" {% if selected_course == course.id|stringformat:"s" %}selected{% endif %}>
+                        {{ course.course_code }} - {{ course.course_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin: 0;">
+                <label class="form-label">Student</label>
+                <select name="student" class="form-control">
+                    <option value="">All Students</option>
+                    {% for student in students %}
+                    <option value="{{ student.id }}" {% if selected_student == student.id|stringformat:"s" %}selected{% endif %}>
+                        {{ student.registration_number }} - {{ student.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin: 0;">
+                <label class="form-label">From Date</label>
+                <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+            </div>
+            
+            <div class="form-group" style="margin: 0;">
+                <label class="form-label">To Date</label>
+                <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i> Generate Report
+        </button>
+    </form>
+    
+    {% if attendances %}
+    <div style="margin-bottom: 1rem; padding: 1rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(79, 70, 229, 0.15)); border-radius: 12px;">
+        <strong>Total Records: {{ attendances.count }}</strong>
+    </div>
+    
+    <div style="overflow-x: auto;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Student</th>
+                    <th>Registration No.</th>
+                    <th>Course</th>
+                    <th>Session Type</th>
+                    <th>Status</th>
+                    <th>Marked By</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attendance in attendances %}
+                <tr>
+                    <td>{{ attendance.session.session_date|date:"d M, Y" }}</td>
+                    <td>{{ attendance.student.name }}</td>
+                    <td><strong>{{ attendance.student.registration_number }}</strong></td>
+                    <td>{{ attendance.session.course.course_code }}</td>
+                    <td><span class="badge badge-success">{{ attendance.session.get_session_type_display }}</span></td>
+                    <td>
+                        {% if attendance.status == 'present' %}
+                        <span class="badge badge-success"><i class="fas fa-check"></i> Present</span>
+                        {% else %}
+                        <span class="badge badge-danger"><i class="fas fa-times"></i> Absent</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if attendance.marked_by == 'face_recognition' %}
+                        <span class="badge" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
+                            <i class="fas fa-brain"></i> AI
+                        </span>
+                        {% elif attendance.marked_by == 'faculty' %}
+                        <span class="badge badge-success"><i class="fas fa-user"></i> Faculty</span>
+                        {% else %}
+                        <span class="badge badge-warning"><i class="fas fa-robot"></i> System</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size: 0.875rem; color: #64748b;">{{ attendance.marked_at|date:"g:i A" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 4rem; color: #64748b;">
+        <i class="fas fa-chart-bar" style="font-size: 4rem; opacity: 0.3; margin-bottom: 1rem;"></i>
+        <h3>No Records Found</h3>
+        <p>{% if selected_course or selected_student or date_from or date_to %}Try adjusting your filters{% else %}No attendance records available yet{% endif %}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

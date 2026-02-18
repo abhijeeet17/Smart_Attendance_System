@@ -1,0 +1,135 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Dashboard - Smart Attendance System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1 class="card-title">
+            <i class="fas fa-chart-line"></i>
+            Dashboard Overview
+        </h1>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card primary">
+        <div class="stat-icon">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-number">{{ total_students }}</div>
+        <div class="stat-label">Total Students</div>
+        <a href="{% url 'student_list' %}" style="margin-top: 1rem; display: inline-block; color: #6366f1; font-weight: 600; text-decoration: none;">
+            View All <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+    
+    <div class="stat-card success">
+        <div class="stat-icon">
+            <i class="fas fa-book"></i>
+        </div>
+        <div class="stat-number">{{ total_courses }}</div>
+        <div class="stat-label">Active Courses</div>
+        <a href="{% url 'course_list' %}" style="margin-top: 1rem; display: inline-block; color: #10b981; font-weight: 600; text-decoration: none;">
+            View All <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+    
+    <div class="stat-card warning">
+        <div class="stat-icon">
+            <i class="fas fa-calendar-day"></i>
+        </div>
+        <div class="stat-number">{{ today_sessions }}</div>
+        <div class="stat-label">Today's Sessions</div>
+        <a href="{% url 'session_list' %}" style="margin-top: 1rem; display: inline-block; color: #f59e0b; font-weight: 600; text-decoration: none;">
+            View All <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+    <div class="card" style="margin: 0;">
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="fas fa-clock"></i>
+                Recent Sessions
+            </h2>
+        </div>
+        
+        {% if recent_sessions %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Course</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in recent_sessions %}
+                <tr>
+                    <td><strong>{{ session.course.course_code }}</strong></td>
+                    <td>{{ session.session_date|date:"d M" }}</td>
+                    <td>
+                        <a href="{% url 'mark_attendance' session.id %}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.875rem;">
+                            <i class="fas fa-check"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="text-align: center; color: #64748b; padding: 2rem;">No sessions yet.</p>
+        {% endif %}
+    </div>
+    
+    <div class="card" style="margin: 0;">
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                Low Attendance Alerts
+            </h2>
+        </div>
+        
+        {% if low_attendance_students %}
+        <div style="max-height: 400px; overflow-y: auto;">
+            {% for item in low_attendance_students %}
+            <div style="padding: 1rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong>{{ item.student.name }}</strong>
+                    <div style="font-size: 0.875rem; color: #64748b;">{{ item.student.registration_number }}</div>
+                </div>
+                <span class="badge badge-danger">{{ item.percentage }}%</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="text-align: center; color: #64748b; padding: 2rem;">
+            <i class="fas fa-check-circle" style="font-size: 2rem; display: block; margin-bottom: 0.5rem; color: #10b981;"></i>
+            All students have good attendance!
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div style="text-align: center; padding: 2rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Quick Actions</h2>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'student_register' %}" class="btn btn-primary">
+                <i class="fas fa-user-plus"></i> Add Student
+            </a>
+            <a href="{% url 'session_create' %}" class="btn btn-secondary">
+                <i class="fas fa-plus-circle"></i> New Session
+            </a>
+            <a href="{% url 'course_create' %}" class="btn btn-outline">
+                <i class="fas fa-book-medical"></i> Add Course
+            </a>
+            <a href="{% url 'attendance_report' %}" class="btn btn-outline">
+                <i class="fas fa-file-alt"></i> View Reports
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

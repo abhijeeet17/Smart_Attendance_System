@@ -1,0 +1,144 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Mark Attendance{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 class="card-title">
+            <i class="fas fa-check-square"></i>
+            Mark Attendance
+        </h1>
+        <a href="{% url 'session_list' %}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Back to Sessions
+        </a>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(79, 70, 229, 0.15)); padding: 2rem; border-radius: 15px; margin-bottom: 2rem;">
+        <h3 style="font-weight: 700; margin-bottom: 1.5rem; color: #0f172a;">
+            <i class="fas fa-info-circle" style="color: #6366f1;"></i> Session Information
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+            <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.25rem;">Course</div>
+                <strong style="font-size: 1.1rem; color: #0f172a;">{{ session.course.course_name }}</strong>
+                <div style="color: #6366f1; font-size: 0.875rem; margin-top: 0.25rem;">{{ session.course.course_code }}</div>
+            </div>
+            <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.25rem;">Date & Time</div>
+                <strong style="font-size: 1.1rem; color: #0f172a;">{{ session.session_date|date:"d M, Y" }}</strong>
+                <div style="color: #6366f1; font-size: 0.875rem; margin-top: 0.25rem;">{{ session.session_time|time:"g:i A" }}</div>
+            </div>
+            <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.25rem;">Type</div>
+                <strong style="font-size: 1.1rem; color: #0f172a;">{{ session.get_session_type_display }}</strong>
+            </div>
+            <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.25rem;">Faculty</div>
+                <strong style="font-size: 1.1rem; color: #0f172a;">{{ session.faculty.get_full_name|default:"Admin" }}</strong>
+            </div>
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+        <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.15)); padding: 1.5rem; border-radius: 15px; text-align: center;">
+            <div style="font-size: 2.5rem; font-weight: 800; color: #10b981;">{{ summary.present }}</div>
+            <div style="color: #059669; font-weight: 600;">Present</div>
+        </div>
+        <div style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.15)); padding: 1.5rem; border-radius: 15px; text-align: center;">
+            <div style="font-size: 2.5rem; font-weight: 800; color: #ef4444;">{{ summary.absent }}</div>
+            <div style="color: #dc2626; font-weight: 600;">Absent</div>
+        </div>
+        <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(79, 70, 229, 0.15)); padding: 1.5rem; border-radius: 15px; text-align: center;">
+            <div style="font-size: 2.5rem; font-weight: 800; color: #6366f1;">{{ summary.percentage }}%</div>
+            <div style="color: #4f46e5; font-weight: 600;">Attendance Rate</div>
+        </div>
+    </div>
+    
+    <div style="text-align: center; margin-bottom: 2rem; padding: 2rem; background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+        <h3 style="font-weight: 700; margin-bottom: 1.5rem; color: #0f172a;">Choose Marking Method</h3>
+        <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'mark_attendance_face' session.id %}" class="btn btn-primary" style="padding: 1.25rem 2rem; font-size: 1.1rem;">
+                <i class="fas fa-camera"></i> Face Recognition
+            </a>
+            <a href="{% url 'mark_attendance_manual' session.id %}" class="btn btn-secondary" style="padding: 1.25rem 2rem; font-size: 1.1rem;">
+                <i class="fas fa-hand-pointer"></i> Manual Selection
+            </a>
+        </div>
+    </div>
+    
+    <h3 style="font-weight: 700; margin-bottom: 1.5rem; color: #0f172a;">
+        <i class="fas fa-list"></i> Attendance List
+    </h3>
+    
+    <div style="overflow-x: auto;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Photo</th>
+                    <th>Registration No.</th>
+                    <th>Student Name</th>
+                    <th>Status</th>
+                    <th>Marked By</th>
+                    <th>Confidence</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attendance in attendances %}
+                <tr>
+                    <td>
+                        {% if attendance.student.photo %}
+                        <img src="{{ attendance.student.photo.url }}" alt="{{ attendance.student.name }}" 
+                             style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid {% if attendance.status == 'present' %}#10b981{% else %}#ef4444{% endif %};">
+                        {% else %}
+                        <div style="width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.875rem;">
+                            {{ attendance.student.name.0 }}
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ attendance.student.registration_number }}</strong></td>
+                    <td>{{ attendance.student.name }}</td>
+                    <td>
+                        {% if attendance.status == 'present' %}
+                        <span class="badge badge-success">
+                            <i class="fas fa-check-circle"></i> Present
+                        </span>
+                        {% else %}
+                        <span class="badge badge-danger">
+                            <i class="fas fa-times-circle"></i> Absent
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if attendance.marked_by == 'face_recognition' %}
+                        <span class="badge" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
+                            <i class="fas fa-brain"></i> AI
+                        </span>
+                        {% elif attendance.marked_by == 'faculty' %}
+                        <span class="badge badge-success">
+                            <i class="fas fa-user"></i> Faculty
+                        </span>
+                        {% else %}
+                        <span class="badge badge-warning">
+                            <i class="fas fa-robot"></i> System
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if attendance.confidence_score %}
+                        <span class="badge badge-success">{{ attendance.confidence_score }}%</span>
+                        {% else %}
+                        <span style="color: #64748b;">-</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size: 0.875rem; color: #64748b;">
+                        {{ attendance.marked_at|date:"g:i A" }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

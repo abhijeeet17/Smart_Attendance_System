@@ -1,0 +1,133 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Home - Smart Attendance System{% endblock %}
+
+{% block content %}
+<div class="hero" style="background: white; border-radius: 30px; padding: 4rem 3rem; box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15); text-align: center; margin-bottom: 3rem;">
+    <div style="max-width: 800px; margin: 0 auto;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">
+            <i class="fas fa-fingerprint" style="background: linear-gradient(135deg, #6366f1, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+        </div>
+        <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem; background: linear-gradient(135deg, #6366f1, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            Smart Attendance System
+        </h1>
+        <p style="font-size: 1.25rem; color: #64748b; margin-bottom: 2rem; line-height: 1.8;">
+            AI-powered face recognition for seamless attendance management. 
+            Mark attendance in seconds with cutting-edge technology.
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'student_register' %}" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                <i class="fas fa-user-plus"></i> Register Student
+            </a>
+            <a href="{% url 'session_create' %}" class="btn btn-secondary" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                <i class="fas fa-plus-circle"></i> Create Session
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card primary">
+        <div class="stat-icon">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-number">{{ total_students }}</div>
+        <div class="stat-label">Registered Students</div>
+    </div>
+    
+    <div class="stat-card success">
+        <div class="stat-icon">
+            <i class="fas fa-book"></i>
+        </div>
+        <div class="stat-number">{{ total_courses }}</div>
+        <div class="stat-label">Active Courses</div>
+    </div>
+    
+    <div class="stat-card warning">
+        <div class="stat-icon">
+            <i class="fas fa-calendar-day"></i>
+        </div>
+        <div class="stat-number">{{ today_sessions }}</div>
+        <div class="stat-label">Today's Sessions</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">
+            <i class="fas fa-clock"></i>
+            Recent Sessions
+        </h2>
+    </div>
+    
+    {% if recent_sessions %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Course</th>
+                <th>Date & Time</th>
+                <th>Type</th>
+                <th>Faculty</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session in recent_sessions %}
+            <tr>
+                <td><strong>{{ session.course.course_code }}</strong> - {{ session.course.course_name }}</td>
+                <td>{{ session.session_date|date:"d M, Y" }} at {{ session.session_time|time:"g:i A" }}</td>
+                <td><span class="badge badge-success">{{ session.get_session_type_display }}</span></td>
+                <td>{{ session.faculty.get_full_name|default:session.faculty.username }}</td>
+                <td>
+                    <a href="{% url 'mark_attendance' session.id %}" class="btn btn-primary" style="padding: 0.5rem 1rem;">
+                        <i class="fas fa-check"></i> Mark
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="text-align: center; padding: 3rem; color: #64748b;">
+        <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+        <p>No attendance sessions created yet.</p>
+        <a href="{% url 'session_create' %}" class="btn btn-primary" style="margin-top: 1rem;">
+            <i class="fas fa-plus"></i> Create First Session
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<div style="background: white; border-radius: 30px; padding: 3rem; box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15); text-align: center;">
+    <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1.5rem; color: #0f172a;">
+        <i class="fas fa-brain" style="color: #6366f1;"></i> 
+        How Face Recognition Works
+    </h2>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem;">
+        <div style="padding: 1.5rem;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(79, 70, 229, 0.2)); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 2rem; color: #6366f1;">
+                <i class="fas fa-camera"></i>
+            </div>
+            <h3 style="font-weight: 600; margin-bottom: 0.5rem;">1. Capture</h3>
+            <p style="color: #64748b; font-size: 0.95rem;">Upload student photo during registration</p>
+        </div>
+        
+        <div style="padding: 1.5rem;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(79, 70, 229, 0.2)); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 2rem; color: #6366f1;">
+                <i class="fas fa-brain"></i>
+            </div>
+            <h3 style="font-weight: 600; margin-bottom: 0.5rem;">2. Encode</h3>
+            <p style="color: #64748b; font-size: 0.95rem;">AI generates unique face encoding</p>
+        </div>
+        
+        <div style="padding: 1.5rem;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(79, 70, 229, 0.2)); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 2rem; color: #6366f1;">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 style="font-weight: 600; margin-bottom: 0.5rem;">3. Verify</h3>
+            <p style="color: #64748b; font-size: 0.95rem;">Match faces during attendance</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

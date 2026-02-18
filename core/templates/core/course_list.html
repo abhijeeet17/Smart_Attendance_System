@@ -1,0 +1,54 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Courses{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 class="card-title">
+            <i class="fas fa-book"></i>
+            Courses
+        </h1>
+        <a href="{% url 'course_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Course
+        </a>
+    </div>
+    
+    {% if courses %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
+        {% for course in courses %}
+        <div style="background: white; border: 2px solid #e2e8f0; border-radius: 15px; padding: 1.5rem; transition: all 0.3s ease;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                <div>
+                    <div style="background: linear-gradient(135deg, #6366f1, #764ba2); color: white; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; display: inline-block; margin-bottom: 0.5rem;">
+                        {{ course.course_code }}
+                    </div>
+                    <h3 style="font-weight: 700; color: #0f172a; margin-bottom: 0.5rem;">{{ course.course_name }}</h3>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                <div style="flex: 1;">
+                    <div style="color: #64748b; font-size: 0.875rem;">Students</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #6366f1;">{{ course.student_count }}</div>
+                </div>
+                <div style="flex: 1;">
+                    <div style="color: #64748b; font-size: 0.875rem;">Faculty</div>
+                    <div style="font-size: 0.95rem; font-weight: 600; color: #0f172a;">{{ course.faculty.get_full_name|default:"N/A" }}</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 4rem;">
+        <i class="fas fa-book" style="font-size: 4rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+        <h3>No courses yet</h3>
+        <p style="color: #64748b;">Add your first course to get started</p>
+        <a href="{% url 'course_create' %}" class="btn btn-primary" style="margin-top: 1rem;">
+            <i class="fas fa-plus"></i> Add Course
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
