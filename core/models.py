@@ -5,7 +5,6 @@ import os
 
 
 class Course(models.Model):
-    """Model for academic courses"""
     course_code = models.CharField(max_length=20, unique=True)
     course_name = models.CharField(max_length=200)
     faculty = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='courses')
@@ -19,7 +18,6 @@ class Course(models.Model):
 
 
 class Student(models.Model):
-    """Model for student information"""
     registration_number = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=200)
     email = models.EmailField(unique=True)
@@ -37,7 +35,6 @@ class Student(models.Model):
         return f"{self.registration_number} - {self.name}"
     
     def get_attendance_percentage(self, course=None):
-        """Calculate attendance percentage for a student"""
         if course:
             total_sessions = AttendanceSession.objects.filter(course=course).count()
             attended = Attendance.objects.filter(student=self, session__course=course, status='present').count()
@@ -51,7 +48,6 @@ class Student(models.Model):
 
 
 class AttendanceSession(models.Model):
-    """Model for attendance sessions"""
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sessions')
     faculty = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     session_date = models.DateField(default=timezone.now)
@@ -76,7 +72,6 @@ class AttendanceSession(models.Model):
         return f"{self.course.course_code} - {self.session_date} {self.session_time}"
     
     def get_attendance_summary(self):
-        """Get attendance summary for this session"""
         total = self.attendances.count()
         present = self.attendances.filter(status='present').count()
         absent = self.attendances.filter(status='absent').count()
@@ -90,7 +85,6 @@ class AttendanceSession(models.Model):
 
 
 class Attendance(models.Model):
-    """Model for individual attendance records"""
     session = models.ForeignKey(AttendanceSession, on_delete=models.CASCADE, related_name='attendances')
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='attendances')
     status = models.CharField(

@@ -1,6 +1,3 @@
-"""
-WSGI config for attendance_system project.
-"""
 
 import os
 

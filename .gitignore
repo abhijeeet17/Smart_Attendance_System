@@ -1,4 +1,9 @@
+
 # Python
+venv310/
+db.sqlite3
+media/
+
 __pycache__/
 *.py[cod]
 *$py.class

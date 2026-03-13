@@ -1,24 +1,12 @@
-"""
-Django settings for attendance_system project.
-"""
 
 from pathlib import Path
 import os
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-your-secret-key-change-this-in-production'
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-
-
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -62,16 +50,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'attendance_system.wsgi.application'
 
 
-# Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -86,9 +70,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
-
-# Internationalization
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Asia/Kolkata'
@@ -96,19 +77,12 @@ TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Face recognition settings
 FACE_RECOGNITION_TOLERANCE = 0.6
-FACE_RECOGNITION_MODEL = 'hog'  # 'hog' is faster, 'cnn' is more accurate
+FACE_RECOGNITION_MODEL = 'hog'

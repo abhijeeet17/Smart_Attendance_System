@@ -14,7 +14,6 @@ import json
 
 
 def home(request):
-    """Home page view"""
     context = {
         'total_students': Student.objects.filter(is_active=True).count(),
         'total_courses': Course.objects.count(),
@@ -27,10 +26,8 @@ def home(request):
 
 
 def student_list(request):
-    """List all students"""
     students = Student.objects.filter(is_active=True).select_related('course')
     
-    # Search functionality
     search_query = request.GET.get('search', '')
     if search_query:
         students = students.filter(
@@ -38,8 +35,6 @@ def student_list(request):
             Q(registration_number__icontains=search_query) |
             Q(email__icontains=search_query)
         )
-    
-    # Filter by course
     course_id = request.GET.get('course', '')
     if course_id:
         students = students.filter(course_id=course_id)
@@ -56,24 +51,17 @@ def student_list(request):
 
 
 def student_register(request):
-    """Register a new student with face encoding"""
     if request.method == 'POST':
-        # Check if image was captured via webcam
         captured_image_data = request.POST.get('captured_image_data', '')
         
         if captured_image_data:
-            # Handle webcam captured image
             import base64
             from io import BytesIO
             from django.core.files.uploadedfile import InMemoryUploadedFile
             import sys
             from PIL import Image as PILImage
-            
-            # Remove the data URL prefix
             image_data = captured_image_data.split(',')[1]
             image_bytes = base64.b64decode(image_data)
-            
-            # Convert to PIL Image and then to InMemoryUploadedFile
             image = PILImage.open(BytesIO(image_bytes))
             output = BytesIO()
             image.save(output, format='JPEG', quality=90)
@@ -293,34 +281,25 @@ def mark_attendance_manual(request, session_id):
 
 
 def mark_attendance_face(request, session_id):
-    """Mark attendance using face recognition with webcam capture"""
     session = get_object_or_404(AttendanceSession, pk=session_id)
     
     if request.method == 'POST':
-        # Check if image was captured via webcam
         captured_image_data = request.POST.get('captured_image_data', '')
         
         if captured_image_data:
-            # Handle webcam captured image
             import base64
             from io import BytesIO
             
             try:
-                # Remove the data URL prefix
                 image_data = captured_image_data.split(',')[1]
                 image_bytes = base64.b64decode(image_data)
                 
-                # Get face service
                 face_service = get_face_service()
-                
-                # Encode uploaded face from bytes
                 uploaded_encoding = face_service.encode_face_from_bytes(image_bytes)
                 
                 if not uploaded_encoding:
                     messages.error(request, 'No face detected in the captured image. Please ensure your face is clearly visible and try again.')
                     return redirect('mark_attendance_face', session_id=session.id)
-                
-                # Get all students in this course with face encodings
                 students = Student.objects.filter(
                     course=session.course, 
                     is_active=True
@@ -339,21 +318,16 @@ def mark_attendance_face(request, session_id):
                 if not student_encodings:
                     messages.warning(request, 'No valid face encodings found. Please ensure students have registered properly.')
                     return redirect('mark_attendance', session_id=session.id)
-                
-                # Find matching student
                 matched_student_id, confidence = face_service.find_matching_student(
                     uploaded_encoding, 
                     student_encodings
                 )
                 
                 if matched_student_id:
-                    # Update attendance
                     attendance = Attendance.objects.get(
                         session=session, 
                         student_id=matched_student_id
                     )
-                    
-                    # Check if already marked present
                     if attendance.status == 'present':
                         student = Student.objects.get(id=matched_student_id)
                         messages.info(
@@ -365,8 +339,6 @@ def mark_attendance_face(request, session_id):
                         attendance.marked_by = 'face_recognition'
                         attendance.confidence_score = confidence
                         attendance.marked_at = timezone.now()
-                        
-                        # Save the captured image
                         from django.core.files.base import ContentFile
                         attendance.photo_captured.save(
                             f'attendance_{session.id}_{matched_student_id}_{timezone.now().strftime("%Y%m%d_%H%M%S")}.jpg',
@@ -390,22 +362,15 @@ def mark_attendance_face(request, session_id):
                 messages.error(request, f'Error processing image: {str(e)}. Please try again.')
                 return redirect('mark_attendance_face', session_id=session.id)
         else:
-            # Handle traditional file upload (backward compatibility)
             form = FaceRecognitionUploadForm(request.POST, request.FILES)
             if form.is_valid():
                 uploaded_image = form.cleaned_data['image']
-                
-                # Get face service
                 face_service = get_face_service()
-                
-                # Encode uploaded face
                 uploaded_encoding = face_service.encode_face_from_bytes(uploaded_image.read())
                 
                 if not uploaded_encoding:
                     messages.error(request, 'No face detected in the uploaded image. Please try again.')
                     return redirect('mark_attendance_face', session_id=session.id)
-                
-                # Get all students in this course with face encodings
                 students = Student.objects.filter(
                     course=session.course, 
                     is_active=True
@@ -416,15 +381,12 @@ def mark_attendance_face(request, session_id):
                     encoding = face_service.string_to_encoding(student.face_encoding)
                     if encoding:
                         student_encodings[student.id] = encoding
-                
-                # Find matching student
                 matched_student_id, confidence = face_service.find_matching_student(
                     uploaded_encoding, 
                     student_encodings
                 )
                 
                 if matched_student_id:
-                    # Update attendance
                     attendance = Attendance.objects.get(
                         session=session, 
                         student_id=matched_student_id
@@ -455,17 +417,12 @@ def mark_attendance_face(request, session_id):
 
 
 def attendance_report(request):
-    """Generate attendance report"""
     courses = Course.objects.all()
     students = Student.objects.filter(is_active=True)
-    
-    # Get filters
     course_id = request.GET.get('course', '')
     student_id = request.GET.get('student', '')
     date_from = request.GET.get('date_from', '')
     date_to = request.GET.get('date_to', '')
-    
-    # Build query
     attendances = Attendance.objects.select_related(
         'student', 'session', 'session__course'
     )
@@ -498,20 +455,15 @@ def attendance_report(request):
 
 
 def dashboard(request):
-    """Main dashboard view"""
-    # Statistics
     total_students = Student.objects.filter(is_active=True).count()
     total_courses = Course.objects.count()
     today_sessions = AttendanceSession.objects.filter(
         session_date=timezone.now().date()
     ).count()
-    
-    # Recent sessions
     recent_sessions = AttendanceSession.objects.select_related(
         'course', 'faculty'
     ).order_by('-session_date', '-session_time')[:5]
     
-    # Low attendance students
     low_attendance_students = []
     for student in Student.objects.filter(is_active=True)[:10]:
         percentage = student.get_attendance_percentage()
