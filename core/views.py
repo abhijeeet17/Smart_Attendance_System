@@ -12,7 +12,10 @@ from .forms import (
 from .face_recognition_utils import get_face_service
 import json
 
+from django.shortcuts import render
 
+def webcam(request):
+    return render(request,'core/webcam.html')
 def home(request):
     context = {
         'total_students': Student.objects.filter(is_active=True).count(),
