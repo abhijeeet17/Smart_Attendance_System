@@ -1,10 +1,7 @@
-
 # Python
-venv310/
-db.sqlite3
-media/
 
-__pycache__/
+venv310/
+**pycache**/
 *.py[cod]
 *$py.class
 *.so
@@ -29,15 +26,14 @@ wheels/
 *.egg
 
 # Django
+
 *.log
 local_settings.py
-db.sqlite3
-db.sqlite3-journal
-/media
 /staticfiles
 .env
 
 # IDE
+
 .vscode/
 .idea/
 *.swp
@@ -46,10 +42,12 @@ db.sqlite3-journal
 .DS_Store
 
 # Testing
+
 .coverage
 .pytest_cache/
 htmlcov/
 
 # Backup files
+
 *.bak
 *.tmp
