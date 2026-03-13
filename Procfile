@@ -1,2 +1,1 @@
-release: python manage.py migrate
-web: gunicorn attendance_system.wsgi:application
+web: python manage.py migrate && gunicorn attendance_system.wsgi:application
