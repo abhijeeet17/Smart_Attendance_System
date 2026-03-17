@@ -170,6 +170,9 @@ smart_attendance_system
 
 ---
 
+## Live Demo
+https://smart-attendance-system-2-usft.onrender.com
+
 ## 📄 License
 
 Educational project for university coursework.
